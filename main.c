@@ -1,37 +1,37 @@
-//БИБЛИОТЕКИ ХЭДЕР
+//Р‘РР‘Р›РРћРўР•РљР РљРћРўРћР Р«Р• Р‘Р«Р›Р Р’ РҐР­Р”Р•Р Р•
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-//БИБЛИОТЕКИ ДЛЯ ФУНКЦИЙ
+//Р‘РР‘Р›РРћРўР•РљР РљРћРўРћР Р«Р• Р‘Р«Р›Р Р’ Р¤РђР™Р›Р• РЎ Р¤РЈРќРљР¦РРЇРњР
 #include <math.h>
 #include <string.h>
 
-//КОНСТАНТЫ
+//РљРћРќРЎРўРђРќРўР«
 #define SIZE 8
 #define BIGSIZE 30
 
-//ПРОТОТИПЫ ФУНКЦИЙ ДЛЯ МЭИН:
+//РџР РћРўРћРўРРџР« Р¤РЈРќРљР¦РР™ Р”Р›РЇ РњР­РРќ:
 
-//создаёт строку вида "ax^2+bx+c=0" и записывает её в eq
+//СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "ax^2+bx+c=0" Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ eq
 void equat_to_string(char * eq, const double a, const double b, const double c);
 
-//решает ВВЕДЁННОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
+//СЂРµС€Р°РµС‚ Р’Р’Р•Р”РЃРќРќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1, *p2
 short solve_equat(const double a,const double b, const double c, double * p1, double * p2);
 
-//создаёт строку вида "Otvet: x = ..." и записывает её в str
+//СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "Otvet: x = ..." Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
 void answer_to_string(const short SOLVES, const double x1, const double x2, char * str);
 
 
 
-//МЭЙН
+//РњР­РРќ
 int main() {
 
     double a,b,c;
     double x1,x2;
-    char equat[BIGSIZE]; //память для строки вида "ax^2+bx+c=0"
-    char answer[BIGSIZE]; //память для строки с ответом
-    short amt_solves; //колво решений
+    char equat[BIGSIZE]; //РїР°РјСЏС‚СЊ РґР»СЏ СЃС‚СЂРѕРєРё РІРёРґР° "ax^2+bx+c=0"
+    char answer[BIGSIZE]; //РїР°РјСЏС‚СЊ РґР»СЏ СЃС‚СЂРѕРєРё СЃ РѕС‚РІРµС‚РѕРј
+    short amt_solves; //РєРѕР»РІРѕ СЂРµС€РµРЅРёР№
 
     printf("Vvedite koefficenty uravnenya (\"q\" for quit): \n");
 
@@ -55,13 +55,13 @@ int main() {
 
 
 
-//ФУНКЦИИ:
+//Р¤РЈРќРљР¦РР:
 
-//подфункция для equat_to_string():  создаёт подстроку содержащую один одночлен и записывает её в str
+//РїРѕРґС„СѓРЅРєС†РёСЏ РґР»СЏ equat_to_string():  СЃРѕР·РґР°С‘С‚ РїРѕРґСЃС‚СЂРѕРєСѓ СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РѕРґРёРЅ РѕРґРЅРѕС‡Р»РµРЅ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
 void odnochlen_to_string(const double K, const char * xx, char * str, const _Bool IsFirst) {
 
-   //IsFirst нужен чтобы не ставить плюс перед первым и положительным одночленом в ур-и.
-   //Например при b=5 a=c=0 итоговая строка без него выглядела бы как "+5x = 0", а не как "5x = 0"
+   //IsFirst РЅСѓР¶РµРЅ С‡С‚РѕР±С‹ РЅРµ СЃС‚Р°РІРёС‚СЊ РїР»СЋСЃ РїРµСЂРµРґ РїРµСЂРІС‹Рј Рё РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј РѕРґРЅРѕС‡Р»РµРЅРѕРј РІ СѓСЂ-Рё.
+   //РќР°РїСЂРёРјРµСЂ РїСЂРё b=5 a=c=0 РёС‚РѕРіРѕРІР°СЏ СЃС‚СЂРѕРєР° Р±РµР· РЅРµРіРѕ РІС‹РіР»СЏРґРµР»Р° Р±С‹ РєР°Рє "+5x = 0", Р° РЅРµ РєР°Рє "5x = 0"
 
     if (K==0) *str='\0';
     else {
@@ -72,11 +72,11 @@ void odnochlen_to_string(const double K, const char * xx, char * str, const _Boo
     }
 }
 
-//подфункция для solve_equat(): решает КВАДРАТНОЕ (а!=0) ур-е, возвращает колво решений и записывает их в *p1, *p2
+//РїРѕРґС„СѓРЅРєС†РёСЏ РґР»СЏ solve_equat(): СЂРµС€Р°РµС‚ РљР’РђР”Р РђРўРќРћР• (Р°!=0) СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1, *p2
 short solve_quadrat(const double a,const double b, const double c, double * p1, double * p2) {
 
-    short solves; //колво решений
-    double D; //дискриминант
+    short solves; //РєРѕР»РІРѕ СЂРµС€РµРЅРёР№
+    double D; //РґРёСЃРєСЂРёРјРёРЅР°РЅС‚
 
     D = b*b - 4*a*c;
     if (D<0)
@@ -95,7 +95,7 @@ short solve_quadrat(const double a,const double b, const double c, double * p1, 
 
 
 
-//функции использованные в мэйн:
+//С„СѓРЅРєС†РёРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Рµ РІ РјСЌРёРЅ:
 
 void equat_to_string(char * eq, const double a, const double b, const double c) {
 
@@ -104,7 +104,7 @@ void equat_to_string(char * eq, const double a, const double b, const double c) 
             strcpy(eq, "0 = 0");
 
     else {
-        char a_str[SIZE];  //выделяем память для подстрок-одночленов
+        char a_str[SIZE];  //РІС‹РґРµР»СЏРµРј РїР°РјСЏС‚СЊ РґР»СЏ РїРѕРґСЃС‚СЂРѕРє-РѕРґРЅРѕС‡Р»РµРЅРѕРІ
         char b_str[SIZE];
         char c_str[SIZE];
 
@@ -122,7 +122,7 @@ void equat_to_string(char * eq, const double a, const double b, const double c) 
             odnochlen_to_string(b, "x", b_str, false);
             odnochlen_to_string(c, "", c_str, false);
         }
-        sprintf(eq, "%s%s%s = 0", a_str, b_str, c_str);   //склеивает подстроки с одночленами в итоговую строку eq
+        sprintf(eq, "%s%s%s = 0", a_str, b_str, c_str);   //СЃРєР»РµРёРІР°РµС‚ РїРѕРґСЃС‚СЂРѕРєРё СЃ РѕРґРЅРѕС‡Р»РµРЅР°РјРё РІ РёС‚РѕРіРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ eq
     }
 }
 
@@ -131,16 +131,16 @@ short solve_equat(const double a,const double b, const double c, double * p1, do
     short SOLVES;
 
     if ((a==0) && (b==0) &&(c==0))
-        SOLVES = 5; //бесконечное колво решений
+        SOLVES = 5; //Р±РµСЃРєРѕРЅРµС‡РЅРѕРµ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№
     else
-        if (a==0)  //решаем линейное ур-е
+        if (a==0)  //СЂРµС€Р°РµРј Р»РёРЅРµР№РЅРѕРµ СѓСЂ-Рµ
             if (b==0)
                 SOLVES = 0;
             else {
                 *p1 = (-c/b);
                 SOLVES = 1; }
 
-        else SOLVES = solve_quadrat(a,b,c, p1,p2); //решаем квадратное ур-е
+        else SOLVES = solve_quadrat(a,b,c, p1,p2); //СЂРµС€Р°РµРј РєРІР°РґСЂР°С‚РЅРѕРµ СѓСЂ-Рµ
 
     return SOLVES;
 }
@@ -162,6 +162,7 @@ void answer_to_string(const short SOLVES, const double x1, const double x2, char
             break;
     }
 }
+
 
 
 
