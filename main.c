@@ -1,51 +1,44 @@
-//БИБЛИОТЕКИ КОТОРЫЕ БЫЛИ В ХЭДЕРЕ
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
-//БИБЛИОТЕКИ КОТОРЫЕ БЫЛИ В ФАЙЛЕ С ФУНКЦИЯМИ
 #include <math.h>
 #include <string.h>
 
-//КОНСТАНТЫ
 #define SIZE 8
 #define BIGSIZE 30
-
-//ПРОТОТИПЫ ФУНКЦИЙ ДЛЯ МЭИН:
 
 //создаёт строку вида "ax^2+bx+c=0" и записывает её в eq
 void equat_to_string(char * eq, const double a, const double b, const double c);
 
 //решает ВВЕДЁННОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
-short solve_equat(const double a,const double b, const double c, double * p1, double * p2);
+short solve_equat(const double a, const double b, const double c, double * p1, double * p2);
 
 //создаёт строку вида "Otvet: x = ..." и записывает её в str
 void answer_to_string(const short SOLVES, const double x1, const double x2, char * str);
 
 
 
-//МЭИН
 int main() {
 
-    double a,b,c;
-    double x1,x2;
-    char equat[BIGSIZE]; //память для строки вида "ax^2+bx+c=0"
-    char answer[BIGSIZE]; //память для строки с ответом
+    double a, b, c;
+    double x1, x2;
+    char str_equat[BIGSIZE]; //память для строки вида "ax^2+bx+c=0"
+    char str_answer[BIGSIZE]; //память для строки с ответом
     short amt_solves; //колво решений
 
     printf("Vvedite koefficenty uravnenya (\"q\" for quit): \n");
 
-    while (scanf("%lf %lf %lf",&a,&b,&c) ==3) {
+    while (scanf("%lf %lf %lf", &a, &b, &c) ==3) {
         printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
 
-        equat_to_string(equat, a, b, c);
+        equat_to_string(str_equat, a, b, c);
 
         amt_solves = solve_equat(a, b, c, &x1, &x2);
-        answer_to_string(amt_solves, x1, x2, answer);
+        answer_to_string(amt_solves, x1, x2, str_answer);
 
-        fputs(equat, stdout);
+        fputs(str_equat, stdout);
         printf("\n");
-        fputs(answer, stdout);
+        fputs(str_answer, stdout);
         printf("\n\nVvedite koefficenty uravnenya (\"q\" for quit): \n");
     }
     return 0;
@@ -73,7 +66,7 @@ void odnochlen_to_string(const double K, const char * xx, char * str, const _Boo
 }
 
 //подфункция для solve_equat(): решает КВАДРАТНОЕ (а!=0) ур-е, возвращает колво решений и записывает их в *p1, *p2
-short solve_quadrat(const double a,const double b, const double c, double * p1, double * p2) {
+short solve_quadrat(const double a, const double b, const double c, double * p1, double * p2) {
 
     short solves; //колво решений
     double D; //дискриминант
@@ -126,11 +119,11 @@ void equat_to_string(char * eq, const double a, const double b, const double c) 
     }
 }
 
-short solve_equat(const double a,const double b, const double c, double * p1, double * p2) {
+short solve_equat(const double a, const double b, const double c, double * p1, double * p2) {
 
     short SOLVES;
 
-    if ((a==0) && (b==0) &&(c==0))
+    if ((a==0) && (b==0) && (c==0))
         SOLVES = 5; //бесконечное колво решений
     else
         if (a==0)  //решаем линейное ур-е
@@ -162,6 +155,7 @@ void answer_to_string(const short SOLVES, const double x1, const double x2, char
             break;
     }
 }
+
 
 
 
