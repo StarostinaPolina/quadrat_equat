@@ -3,44 +3,81 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <assert.h>
 
-#define SIZE 8
+#define SIZE 20
 #define BIGSIZE 30
 
-//создаёт строку вида "ax^2+bx+c=0" и записывает её в eq
-void equat_to_string(char * eq, const double a, const double b, const double c);
+enum Solution {
+
+    ONE = 1,
+    TWO = 2,
+    NO  = 0,
+    INF = -1,
+    ERR = -2,
+
+};
+
+enum Messages {
+
+    SUCCESS = 0,
+    FAILURE = -1,
+    TOOMUCH_INPUTS = 1,
+    QUIT = 2,
+
+};
+
 
 //решает ВВЕДЁННОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
-short solve_equat(const double a, const double b, const double c, double * p1, double * p2);
+enum Solution solve_equat(const double a, const double b, const double c, double * p1, double * p2);
 
 //создаёт строку вида "Otvet: x = ..." и записывает её в str
-void answer_to_string(const short SOLVES, const double x1, const double x2, char * str);
+enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str);
 
+//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
+void check_input(const double a, const double b, const double c);
 
+//рекурсия: требует повторить ввод пока не введут q
+bool recur_input(double * pa, double * pb, double * pc);
+
+//цикл: требует повторить ввод пока не введут q
+enum Messages cycle_input(double * pa, double * pb, double * pc);
+
+//выводит сообщение в зависимости от причины выхода
+void message_close(enum Messages reason_close);
 
 int main() {
 
-    double a, b, c;
-    double x1, x2;
-    char str_equat[BIGSIZE]; //память для строки вида "ax^2+bx+c=0"
+    double a = NAN, b = NAN, c = NAN;
+    double x1 = NAN, x2 = NAN;
+
+
     char str_answer[BIGSIZE]; //память для строки с ответом
-    short amt_solves; //колво решений
 
-    printf("Vvedite koefficenty uravnenya (\"q\" for quit): \n");
 
-    while (scanf("%lf %lf %lf", &a, &b, &c) ==3) {
-        printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
+    enum Solution amt_solves = ERR; //колво решений
+    enum Messages reason_close = FAILURE;
 
-        equat_to_string(str_equat, a, b, c);
+    reason_close = cycle_input(&a, &b, &c);
 
+    for (; reason_close == SUCCESS; reason_close = cycle_input(&a, &b, &c))  {
+
+        check_input(a, b, c);
+
+//главная суть (
         amt_solves = solve_equat(a, b, c, &x1, &x2);
         answer_to_string(amt_solves, x1, x2, str_answer);
+//главная суть )
 
-        fputs(str_equat, stdout);
-        printf("\n");
         fputs(str_answer, stdout);
-        printf("\n\nVvedite koefficenty uravnenya (\"q\" for quit): \n");
+
+        a = b = c = x1 = x2 = NAN;
+        printf("\n\n");
     }
+
+
+    message_close(reason_close);
+
     return 0;
 }
 
@@ -48,113 +85,216 @@ int main() {
 
 
 
-//ФУНКЦИИ:
+//ФУНКЦИИ
 
-//подфункция для equat_to_string():  создаёт подстроку содержащую один одночлен и записывает её в str
-void odnochlen_to_string(const double K, const char * xx, char * str, const _Bool IsFirst) {
 
-   //IsFirst нужен чтобы не ставить плюс перед первым и положительным одночленом в ур-и.
-   //Например при b=5 a=c=0 итоговая строка без него выглядела бы как "+5x = 0", а не как "5x = 0"
+//ПОДФУНКЦИИ:
 
-    if (K==0) *str='\0';
-    else {
-        if ((K < 0) || (IsFirst))
-            sprintf(str, "%.2f%s", K, xx);
-        else
-            sprintf(str, "+%.2f%s", K, xx);
-    }
+//сравнение дабл с 0
+bool compare_double(double your, double sample) {
+    return  (fabs(your-sample) <= 1e-5);
 }
+
+//проверка чисел на NAN
+void check_input(const double a, const double b, const double c) {
+
+    assert (!(isnan(a) || isnan(b) || isnan(c)));
+    printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
+}
+
+//подчищает буфер
+void eat_left_string(void) {
+    char c = NAN;
+    c = getchar();
+    while (c !='\n' &&  c != EOF)
+         c = getchar();
+}
+
 
 //подфункция для solve_equat(): решает КВАДРАТНОЕ (а!=0) ур-е, возвращает колво решений и записывает их в *p1, *p2
-short solve_quadrat(const double a, const double b, const double c, double * p1, double * p2) {
+enum Solution solve_quadrat(const double a, const double b, const double c, double * p1, double * p2) {
 
-    short solves; //колво решений
-    double D; //дискриминант
+    assert (p1 != NULL && p2 != NULL);
 
-    D = b*b - 4*a*c;
-    if (D<0)
-        solves = 0;
-    else if (D>0) {
-        solves = 2;
-        *p1 = (-b - sqrt(D)) / (2 * a);
-        *p2 = (-b + sqrt(D)) / (2 * a);
+    enum Solution SOLVES; //колво решений  // TODO: enum
+    double D = NAN; //дискриминант
+
+    D = b * b - 4 * a * c;
+    if (D < 0) {
+        SOLVES = NO;
+    }
+    else if (D > 0) {
+        SOLVES = TWO;
+        D = sqrt(D);
+        *p1 = (-b - D) / (2 * a);
+        *p2 = (-b + D) / (2 * a);
     }
     else {
-        solves = 1;
-        *p1 = (-b)/(2*a);
+        SOLVES = ONE;
+        *p1 = (-b) / (2 * a);
     }
-    return solves;
+    return SOLVES;
+}
+
+
+//подфункция для solve_equat(): решает ЛИНЕЙНОЕ (а=0) ур-е, возвращает колво решений и записывает их в *p1
+enum Solution solve_linar(const double b, const double c, double * p1) {
+
+    assert (p1 != NULL);
+
+    enum Solution SOLVES;
+    if (compare_double(b,0)) {
+
+         if (compare_double(b,0) )
+              SOLVES = INF;
+         else SOLVES = NO;
     }
-
-
-
-//функции использованные в мэин:
-
-void equat_to_string(char * eq, const double a, const double b, const double c) {
-
-
-    if ((a==0) && (b==0) && (c==0))
-            strcpy(eq, "0 = 0");
 
     else {
-        char a_str[SIZE];  //выделяем память для подстрок-одночленов
-        char b_str[SIZE];
-        char c_str[SIZE];
+            *p1 = -c / b;
+            SOLVES = ONE;
+    }
+    return SOLVES;
+}
 
-        odnochlen_to_string(a, "x^2", a_str, true);
 
-        if (a == 0) {
-            odnochlen_to_string(b, "x", b_str, true);
 
-            if (b == 0)
-                  odnochlen_to_string(c, "", c_str, true);
-            else
-                  odnochlen_to_string(c, "", c_str, false);
-        }
-        else {
-            odnochlen_to_string(b, "x", b_str, false);
-            odnochlen_to_string(c, "", c_str, false);
-        }
-        sprintf(eq, "%s%s%s = 0", a_str, b_str, c_str);   //склеивает подстроки с одночленами в итоговую строку eq
+
+//ФУНКЦИИ МЭИН:
+
+//выводит сообщение в зависимости от причины выхода
+void message_close(enum Messages reason_close) {
+
+    switch (reason_close) {
+
+        case QUIT:
+           printf("Correct quit");
+           break;
+
+        case TOOMUCH_INPUTS:
+           printf("Too many wrong inputs. Close program.");
+           break;
+
+        case FAILURE:
+           printf("reason_close = FAILURE");
+           break;
+
+        case SUCCESS:
+           printf("reason_close = SUCCESS");
+           break;
     }
 }
 
-short solve_equat(const double a, const double b, const double c, double * p1, double * p2) {
 
-    short SOLVES;
+//рекурс: требует повторить ввод пока не введут q
+bool recur_input(double * pa, double * pb, double * pc) {
 
-    if ((a==0) && (b==0) && (c==0))
-        SOLVES = 5; //бесконечное колво решений
-    else
-        if (a==0)  //решаем линейное ур-е
-            if (b==0)
-                SOLVES = 0;
-            else {
-                *p1 = (-c/b);
-                SOLVES = 1; }
+   assert (pa != NULL && pb != NULL && pc != NULL);
+   bool res;
 
-        else SOLVES = solve_quadrat(a,b,c, p1,p2); //решаем квадратное ур-е
+   printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
+
+   if (scanf("%lf %lf %lf", pa, pb, pc) != 3) {
+
+        if (getchar() == 'q') {
+
+              eat_left_string();
+              res = false;
+        }
+
+        else {
+            eat_left_string();
+            printf("Wrong input. Try again.\n\n");
+
+            if (recur_input(pa, pb, pc))
+                 res = true;
+            else res = false;
+        }
+
+    }
+
+   else {
+        res = true;
+        eat_left_string();
+   }
+   return res;
+}
+
+//цикл: требует повторить ввод пока не введут q
+enum Messages cycle_input(double * pa, double * pb, double * pc) {
+
+   assert (pa != NULL && pb != NULL && pc != NULL);
+
+   enum Messages flag = SUCCESS;
+
+   printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
+
+   for (int i=0; (flag == SUCCESS) && (scanf("%lf %lf %lf", pa, pb, pc) != 3); i++) {
+
+        if (getchar() == 'q') {
+
+              eat_left_string();
+              flag = QUIT;
+        }
+
+        else {
+            eat_left_string();
+
+            if (i>4)
+                flag = TOOMUCH_INPUTS;
+            else printf("Wrong input. Try again.\n\n");
+
+        }
+    }
+
+    return flag;
+}
+
+
+
+enum Solution solve_equat(const double a, const double b, const double c,
+                                        double * p1, double * p2)  {
+
+    enum Solution SOLVES;
+
+    if (compare_double(a,0)) SOLVES = solve_linar(b, c, p1); //решаем линейное ур-е
+    else SOLVES = solve_quadrat(a, b, c, p1, p2); //решаем квадратное ур-е
 
     return SOLVES;
 }
 
-void answer_to_string(const short SOLVES, const double x1, const double x2, char * str) {
+enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str) {
+
+    assert (str != NULL);
+    enum Messages res = SUCCESS;
 
     switch (SOLVES) {
-        case 5:
-            sprintf(str, "Otvet:  Infinity");
+
+        case INF:
+            sprintf(str, "Otvet:  Any solution");
             break;
-        case 0:
+
+        case NO:
             sprintf(str, "Otvet:  No solution");
             break;
-        case 1:
-            sprintf(str, "Otvet:  x = %.3lf", x1);
-            break;
-        case 2:
+
+        case ONE:
+           assert (!isnan(x1));
+           sprintf(str, "Otvet:  x = %.3lf", x1);
+           break;
+
+        case TWO:
+            assert (!(isnan(x1) || isnan(x2)));
             sprintf(str, "Otvet:  x1 = %.3lf,  x2 = %.3lf", x1, x2);
             break;
+
+        case ERR:
+            res = FAILURE;
+            break;
     }
+    return res;
 }
+
 
 
 
