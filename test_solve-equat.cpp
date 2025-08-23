@@ -25,7 +25,7 @@ enum Messages {
 
 
 
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂР°РІРЅС‹ Р»Рё РєРѕСЌС„С‹ NAN, eСЃР»Рё РґР° - Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРіСЂР°РјРјСѓ, РµСЃР»Рё РЅРµС‚ - РІС‹РІРѕРґРёС‚ РёС… РЅР° СЌРєСЂР°РЅ
 void check_input(const double a, const double b, const double c);
 
 enum Messages analys(double * p01, double * p02, const enum Solution SOLVES);
@@ -41,14 +41,14 @@ void output_x(const char c, const double x, const double x0);
 
 
 
-//тест мэин
+//С‚РµСЃС‚ РјСЌРёРЅ
 int main() {
 
     double a = NAN, b = NAN, c = NAN;
     double x1 = NAN, x2 = NAN;
     double x01 = NAN, x02 = NAN;
 
-    enum Solution SOLVES = ERR; //колво решений
+    enum Solution SOLVES = ERR; //РєРѕР»РІРѕ СЂРµС€РµРЅРёР№
     short int_SOLVES = -2;
     int tests = NAN;
     FILE * fp = NULL;
@@ -69,9 +69,9 @@ int main() {
 
         analys(&x01, &x02, SOLVES);
 
-        check(a,b,c, &x1, &x2, SOLVES, x01, x02);
+        check(a, b, c, &x1, &x2, SOLVES, x01, x02); // TODO: Р»РёС€РЅРёРµ Р°СЂРіСѓРјРµРЅС‚С‹
 
-        a = b = c = x1 = x2 = NAN;
+        a = b = c = NAN;
         printf("\n\n");
     }
 
@@ -80,7 +80,7 @@ int main() {
 
 
 
-//ФУНКЦИИ
+//Р¤РЈРќРљР¦РР
 
 enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
 
@@ -88,8 +88,6 @@ enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
 
         case ERR:
            return FAILURE;
-           break;
-
         case INF:
         case NO:
           *p01 = *p02 = NAN;
@@ -114,27 +112,29 @@ enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
 
 
 
-//ПОДФУНКЦИИ:
+//РџРћР”Р¤РЈРќРљР¦РР:
 
-//сравнение дабл
+//СЃСЂР°РІРЅРµРЅРёРµ РґР°Р±Р»
 bool compare_double(double your, double sample) {
 
     bool res;
 
-    if (isnan(your))  res = (isnan(sample));
-    else res = (fabs(your-sample) <= 1e-5);
+    if (isnan(your))
+        res = (isnan(sample));
+    else
+        res = (fabs(your-sample) <= 1e-5); // TODO: РІ РєРѕРЅСЃС‚Р°РЅС‚Сѓ
 
     return res;
 }
 
-//проверка чисел на NAN
+//РїСЂРѕРІРµСЂРєР° С‡РёСЃРµР» РЅР° NAN
 void check_input(const double a, const double b, const double c) {
 
     assert (!(isnan(a) || isnan(b) || isnan(c)));
     printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
 }
 
-//подчищает буфер
+//РїРѕРґС‡РёС‰Р°РµС‚ Р±СѓС„РµСЂ
 void eat_left_string(FILE * fp) {
     char c = NAN;
     c = fgetc(fp);
@@ -143,32 +143,32 @@ void eat_left_string(FILE * fp) {
 }
 
 
-///!!!!! НАЧАЛО solve_equat
+///!!!!! РќРђР§РђР›Рћ solve_equat
 
 
-// протипы пф
+// РїСЂРѕС‚РёРїС‹ РїС„
 enum Solution solve_linar(const double b, const double c, double * p1);
 enum Solution solve_quadrat(const double a, const double b, const double c, double * p1, double * p2);
 
-// ГЛАВНАЯ
+// Р“Р›РђР’РќРђРЇ
 enum Solution solve_equat(const double a, const double b, const double c,
                                         double * p1, double * p2)  {
 
     enum Solution SOLVES;
 
-    if (compare_double(a,0)) SOLVES = solve_linar(b, c, p1); //решаем линейное ур-е
-    else SOLVES = solve_quadrat(a, b, c, p1, p2); //решаем квадратное ур-е
+    if (compare_double(a,0)) SOLVES = solve_linar(b, c, p1); //СЂРµС€Р°РµРј Р»РёРЅРµР№РЅРѕРµ СѓСЂ-Рµ
+    else SOLVES = solve_quadrat(a, b, c, p1, p2); //СЂРµС€Р°РµРј РєРІР°РґСЂР°С‚РЅРѕРµ СѓСЂ-Рµ
 
     return SOLVES;
 }
 
-//  ПОДФ:       решает КВАДРАТНОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
+//  РџРћР”Р¤:       СЂРµС€Р°РµС‚ РљР’РђР”Р РђРўРќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1, *p2
 enum Solution solve_quadrat(const double a, const double b, const double c, double * p1, double * p2) {
 
     assert (p1 != NULL && p2 != NULL);
 
-    enum Solution SOLVES; //колво решений  // TODO: enum
-    double D = NAN; //дискриминант
+    enum Solution SOLVES; //РєРѕР»РІРѕ СЂРµС€РµРЅРёР№  // TODO: enum
+    double D = NAN; //РґРёСЃРєСЂРёРјРёРЅР°РЅС‚
 
     D = b * b - 4 * a * c;
     if (D < 0) {
@@ -187,7 +187,7 @@ enum Solution solve_quadrat(const double a, const double b, const double c, doub
     return SOLVES;
 }
 
-//  ПОДФ:       решает ЛИНЕЙНОЕ ур-е, возвращает колво решений и записывает их в *p1
+//  РџРћР”Р¤:       СЂРµС€Р°РµС‚ Р›РРќР•Р™РќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1
 enum Solution solve_linar(const double b, const double c, double * p1) {
 
     assert (p1 != NULL);
@@ -209,7 +209,7 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
 
 
 
-// КОНЕЦ solve_equat
+// РљРћРќР•Р¦ solve_equat
 
 
 
@@ -220,7 +220,7 @@ void check(const double a, const double b, const double c, double * p1, double *
 
      enum Solution OUT_SOLVES = solve_equat(a, b, c, p1, p2);
 
-     if ((OUT_SOLVES != IN_SOLVES) || compare_double(*p1, x01) || compare_double(*p2, x02))  {
+     if ((OUT_SOLVES != IN_SOLVES) || !compare_double(*p1, x01) || !compare_double(*p2, x02))  {
 
            printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", a, b, c, OUT_SOLVES, IN_SOLVES);
 
