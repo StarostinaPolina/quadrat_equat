@@ -5,6 +5,8 @@
 #include <string.h>
 #include <assert.h>
 
+#define DELTA 1.0e-5
+
 
 enum Solution {
 
@@ -25,16 +27,16 @@ enum Messages {
 
 
 
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
-void check_input(const double a, const double b, const double c);
 
+//считывает корни из файла в зависимости от колва решений
 enum Messages analys(double * p01, double * p02, const enum Solution SOLVES);
 
+//сравнивает даблы
 bool compare_double(double your, double sample);
 
-void check(const double a, const double b, const double c,
-                double * p1, double * p2, const enum Solution IN_SOLVES,
-                                           const double x01, const double x02) ;
+//проверяет решателя
+int check(const double a, const double b, const double c,
+                const enum Solution in_solves, const double x01, const double x02);
 
 void eat_left_string(FILE * fp);
 void output_x(const char c, const double x, const double x0);
@@ -45,23 +47,25 @@ void output_x(const char c, const double x, const double x0);
 int main() {
 
     double a = NAN, b = NAN, c = NAN;
-    double x1 = NAN, x2 = NAN;
+
     double x01 = NAN, x02 = NAN;
 
     enum Solution SOLVES = ERR; //колво решений
     short int_SOLVES = -2;
-    int tests = NAN;
+    int all_tests = NAN, succ_tests = 0;
+
     FILE * fp = NULL;
     fp = fopen("C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\1f  quad-equat\\tests.txt", "r");
 
     assert (fp != NULL);
 
-
     eat_left_string(fp);
-    fscanf(fp, "%d", &tests);
+    fscanf(fp, "%d", &all_tests);
+
+    assert (! isnan(all_tests));
 
 
-    for (int i = 0; i < tests; i++)  {
+    for (int i = 0; i < all_tests; i++)  {
 
 
         fscanf(fp, "%lf %lf %lf %d %lf %lf", &a, &b, &c, &int_SOLVES, &x01, &x02);
@@ -69,11 +73,13 @@ int main() {
 
         analys(&x01, &x02, SOLVES);
 
-        check(a, b, c, &x1, &x2, SOLVES, x01, x02); // TODO: лишние аргументы
+        succ_tests += check(a, b, c, SOLVES, x01, x02);
 
         a = b = c = NAN;
         printf("\n\n");
     }
+
+    printf("All test: %d.  Test complete: %d", all_tests, succ_tests);
 
     return 0;
 }
@@ -109,9 +115,6 @@ enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
 
 
 
-
-
-
 //ПОДФУНКЦИИ:
 
 //сравнение дабл
@@ -122,17 +125,11 @@ bool compare_double(double your, double sample) {
     if (isnan(your))
         res = (isnan(sample));
     else
-        res = (fabs(your-sample) <= 1e-5); // TODO: в константу
+        res = (fabs(your-sample) <= DELTA); // TODO: в константу
 
     return res;
 }
 
-//проверка чисел на NAN
-void check_input(const double a, const double b, const double c) {
-
-    assert (!(isnan(a) || isnan(b) || isnan(c)));
-    printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
-}
 
 //подчищает буфер
 void eat_left_string(FILE * fp) {
@@ -141,6 +138,7 @@ void eat_left_string(FILE * fp) {
     while (c !='\n' &&  c != EOF)
          c = fgetc(fp);
 }
+
 
 
 ///!!!!! НАЧАЛО solve_equat
@@ -195,7 +193,7 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
     enum Solution SOLVES;
     if (compare_double(b,0)) {
 
-         if (compare_double(b,0) )
+         if (compare_double(c,0) )
               SOLVES = INF;
          else SOLVES = NO;
     }
@@ -216,19 +214,26 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
 
 
 
-void check(const double a, const double b, const double c, double * p1, double * p2, const enum Solution IN_SOLVES, const double x01, const double x02) {
+int check(const double a, const double b, const double c, const enum Solution in_solves, const double x01, const double x02) {
 
-     enum Solution OUT_SOLVES = solve_equat(a, b, c, p1, p2);
+     double x1 = NAN, x2 = NAN;
 
-     if ((OUT_SOLVES != IN_SOLVES) || !compare_double(*p1, x01) || !compare_double(*p2, x02))  {
+     enum Solution out_solves = solve_equat(a, b, c, &x1, &x2);
 
-           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", a, b, c, OUT_SOLVES, IN_SOLVES);
+     if ((out_solves != in_solves) || !compare_double(x1, x01) || !compare_double(x2, x02))  {
 
-           output_x('1', *p1, x01);
-           output_x('2', *p2, x02);
+           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", a, b, c, out_solves, in_solves);
+
+           output_x('1', x1, x01);
+           output_x('2', x2, x02);
+
+           return 0;
       }
 
-      else printf("Good!");
+      else {
+         printf("Good!");
+         return 1;
+      }
 }
 
 
