@@ -1,13 +1,13 @@
 #include <math.h>
-//#include хэдер
+//#include С…СЌРґРµСЂ
 
 
 
 
-//!!!!! НАЧАЛО функции (без пф) для ввода/вывода в мэин
+//!!!!! РќРђР§РђР›Рћ С„СѓРЅРєС†РёРё (Р±РµР· РїС„) РґР»СЏ РІРІРѕРґР°/РІС‹РІРѕРґР° РІ РјСЌРёРЅ
 
 
-// выводит сообщение в зависимости от причины выхода
+// РІС‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїСЂРёС‡РёРЅС‹ РІС‹С…РѕРґР°
 void message_close(enum Messages reason_close) {
 
     switch (reason_close) {
@@ -30,7 +30,7 @@ void message_close(enum Messages reason_close) {
     }
 }
 
-// рекурс: требует повторить ввод пока не введут q
+// СЂРµРєСѓСЂСЃ: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
 bool recur_input(double * pa, double * pb, double * pc) {
 
    assert (pa != NULL && pb != NULL && pc != NULL);
@@ -64,7 +64,7 @@ bool recur_input(double * pa, double * pb, double * pc) {
    return res;
 }
 
-// цикл: требует повторить ввод пока не введут q
+// С†РёРєР»: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
 enum Messages cycle_input(double * pa, double * pb, double * pc) {
 
    assert (pa != NULL && pb != NULL && pc != NULL);
@@ -94,7 +94,7 @@ enum Messages cycle_input(double * pa, double * pb, double * pc) {
     return flag;
 }
 
-// создаёт строку вида "Otvet: x = ..." и записывает её в str
+// СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "Otvet: x = ..." Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
 enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str) {
 
     assert (str != NULL);
@@ -127,7 +127,7 @@ enum Messages answer_to_string(const enum Solution SOLVES, const double x1, cons
     return res;
 }
 
-// проверка чисел на NAN
+// РїСЂРѕРІРµСЂРєР° С‡РёСЃРµР» РЅР° NAN
 void check_input(const double a, const double b, const double c) {
 
     assert (!(isnan(a) || isnan(b) || isnan(c)));
@@ -135,26 +135,41 @@ void check_input(const double a, const double b, const double c) {
 }
 
 
-// КОНЕЦ функции (без пф) для ввода/вывода в мэин
+// РљРћРќР•Р¦ С„СѓРЅРєС†РёРё (Р±РµР· РїС„) РґР»СЏ РІРІРѕРґР°/РІС‹РІРѕРґР° РІ РјСЌРёРЅ
 
 
 
 
 
 
-//!!!!! НАЧАЛО масенькие и полезные
+//!!!!! РќРђР§РђР›Рћ РјР°СЃРµРЅСЊРєРёРµ Рё РїРѕР»РµР·РЅС‹Рµ
 
 
-// подчищает буфер
-void eat_left_string(void) {
+// РїРѕРґС‡РёС‰Р°РµС‚ Р±СѓС„РµСЂ
+
+void eat_left_string(FILE * fp) {
     char c = NAN;
-    c = getchar();
+    c = fgetc(fp);
     while (c !='\n' &&  c != EOF)
-         c = getchar();
+         c = fgetc(fp);
 }
 
 
-// КОНЕЦ масенькие и полезные
+//СЃСЂР°РІРЅРёРІР°РµС‚ РґР°Р±Р»С‹
+bool compare_double(double your, double sample) {
+
+    bool res;
+
+    if (isnan(your))
+        res = (isnan(sample));
+    else
+        res = (fabs(your-sample) <= DELTA); // TODO: РІ РєРѕРЅСЃС‚Р°РЅС‚Сѓ
+
+    return res;
+}
+
+
+// РљРћРќР•Р¦ РјР°СЃРµРЅСЊРєРёРµ Рё РїРѕР»РµР·РЅС‹Рµ
 
 
 
@@ -162,32 +177,32 @@ void eat_left_string(void) {
 
 
 
-//!!!!! НАЧАЛО solve_equat
+//!!!!! РќРђР§РђР›Рћ solve_equat
 
 
-// протипы пф
+// РїСЂРѕС‚РёРїС‹ РїС„
 enum Solution solve_linar(const double b, const double c, double * p1);
 enum Solution solve_quadrat(const double a, const double b, const double c, double * p1, double * p2);
 
-// ГЛАВНАЯ
+// Р“Р›РђР’РќРђРЇ
 enum Solution solve_equat(const double a, const double b, const double c,
                                         double * p1, double * p2)  {
 
     enum Solution SOLVES;
 
-    if (compare_double(a,0)) SOLVES = solve_linar(b, c, p1); //решаем линейное ур-е
-    else SOLVES = solve_quadrat(a, b, c, p1, p2); //решаем квадратное ур-е
+    if (compare_double(a,0)) SOLVES = solve_linar(b, c, p1); //СЂРµС€Р°РµРј Р»РёРЅРµР№РЅРѕРµ СѓСЂ-Рµ
+    else SOLVES = solve_quadrat(a, b, c, p1, p2); //СЂРµС€Р°РµРј РєРІР°РґСЂР°С‚РЅРѕРµ СѓСЂ-Рµ
 
     return SOLVES;
 }
 
-//  ПОДФ:       решает КВАДРАТНОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
+//  РџРћР”Р¤:       СЂРµС€Р°РµС‚ РљР’РђР”Р РђРўРќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1, *p2
 enum Solution solve_quadrat(const double a, const double b, const double c, double * p1, double * p2) {
 
     assert (p1 != NULL && p2 != NULL);
 
-    enum Solution SOLVES; //колво решений  // TODO: enum
-    double D = NAN; //дискриминант
+    enum Solution SOLVES; //РєРѕР»РІРѕ СЂРµС€РµРЅРёР№  // TODO: enum
+    double D = NAN; //РґРёСЃРєСЂРёРјРёРЅР°РЅС‚
 
     D = b * b - 4 * a * c;
     if (D < 0) {
@@ -206,7 +221,7 @@ enum Solution solve_quadrat(const double a, const double b, const double c, doub
     return SOLVES;
 }
 
-//  ПОДФ:       решает ЛИНЕЙНОЕ ур-е, возвращает колво решений и записывает их в *p1
+//  РџРћР”Р¤:       СЂРµС€Р°РµС‚ Р›РРќР•Р™РќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1
 enum Solution solve_linar(const double b, const double c, double * p1) {
 
     assert (p1 != NULL);
@@ -214,7 +229,7 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
     enum Solution SOLVES;
     if (compare_double(b,0)) {
 
-         if (compare_double(b,0) )
+         if (compare_double(c,0) )
               SOLVES = INF;
          else SOLVES = NO;
     }
@@ -227,57 +242,81 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
 }
 
 
-
-// КОНЕЦ solve_equat
-
+// РљРћРќР•Р¦ solve_equat
 
 
 
 
 
+//!!!!! РќРђР§РђР›Рћ С‚РµСЃС‚
 
+//РїСЂРѕС‚РѕС‚РёРї РїС„
+void output_x(const char c, const double x, const double x0);
 
-//В РАЗРАБОТКЕ
+// СЃС‡РёС‚С‹РІР°РµС‚ РєРѕСЂРЅРё РёР· С„Р°Р№Р»Р° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РєРѕР»РІР° СЂРµС€РµРЅРёР№
+enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
 
+      switch (SOLVES) {
 
-/*
+        case ERR:
+           return FAILURE;
+        case INF:
+        case NO:
+          *p01 = *p02 = NAN;
+           break;
 
-void check(const double a, const double b, const double c, double * p1, double * p2, const enum Solution IN_SOLVES, const double x01, const double x02) {
+        case ONE:
+           *p02 = NAN;
+           break;
 
-     enum Solution OUT_SOLVES = solve_equat(a, b, c, p1, p2);
+        case TWO:
+           break;
 
-     if ((OUT_SOLVES != IN_SOLVES))  {
-                                     kl
-           printf("FAILED:   solve_equat( %.3lf,  %.3lf,  %.3lf ) \nSOLVES = %d  (inst. %d)", a, b, c, OUT_SOLVES, IN_SOLVES);
-
-           output_x('1', *p1, x01);
-           output_x('2', *p2, x02);
       }
 
-      else printf("Good!");
+      return SUCCESS;
+}
+
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂРµС€Р°С‚РµР»СЏ
+int check(const double a, const double b, const double c, const enum Solution in_solves, const double x01, const double x02) {
+
+     double x1 = NAN, x2 = NAN;
+
+     enum Solution out_solves = solve_equat(a, b, c, &x1, &x2);
+
+     if ((out_solves != in_solves) || !compare_double(x1, x01) || !compare_double(x2, x02))  {
+
+           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", a, b, c, out_solves, in_solves);
+
+           output_x('1', x1, x01);
+           output_x('2', x2, x02);
+
+           return 0;
+      }
+
+      else {
+         printf("Good!");
+         return 1;
+      }
 }
 
 
+// РџРћР”Р¤ check:  СѓРґРѕР±РЅС‹Р№ РІС‹РІРѕРґ
 void output_x(const char c, const double x, const double x0) {
 
    printf("    x%c = ", c);
 
    if (isnan(x)) printf("NAN");
-   else printf("%lf", x);
+   else printf("%.3lf", x);
 
    printf(" (inst. ");
 
    if (isnan(x0)) printf("NAN)");
-   else printf("%lf)", x0);
+   else printf("%.3lf)", x0);
 }
 
+// РљРћРќР•Р¦ С‚РµСЃС‚
 
-//сравнение дабл с 0
-bool compare_double(double your, double sample) {
-    return  (fabs(your-sample) <= 1e-5);
-}
-
-*/
 
 
 
