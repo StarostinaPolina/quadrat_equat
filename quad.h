@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #define BIGSIZE 30
+#define DELTA 1.0e-5
 
 enum Solution {
 
@@ -25,32 +26,53 @@ enum Messages {
 
 };
 
-//!!!!!!!!!!! ТРОГАТЬ НЕЛЬЗЯ
 
-//решает ВВЕДЁННОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
+
+//  РћР‘Р©Р•Р•
+
+//СЂРµС€Р°РµС‚ Р’Р’Р•Р”РЃРќРќРћР• СѓСЂ-Рµ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РІРѕ СЂРµС€РµРЅРёР№ Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РёС… РІ *p1, *p2
 enum Solution solve_equat(const double a, const double b, const double c, double * p1, double * p2);
 
+// РїРѕРґС‡РёС‰Р°РµС‚ Р±СѓС„РµСЂ
+void eat_left_string(FILE * fp);
 
-//создаёт строку вида "Otvet: x = ..." и записывает её в str
+//СЃСЂР°РІРЅРёРІР°РµС‚ РґР°Р±Р»С‹
+bool compare_double(double your, double sample);
+
+
+
+
+// Р”Р›РЇ РњР­РРќ
+
+//СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "Otvet: x = ..." Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
 enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str);
 
 
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂР°РІРЅС‹ Р»Рё РєРѕСЌС„С‹ NAN, eСЃР»Рё РґР° - Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРіСЂР°РјРјСѓ, РµСЃР»Рё РЅРµС‚ - РІС‹РІРѕРґРёС‚ РёС… РЅР° СЌРєСЂР°РЅ
 void check_input(const double a, const double b, const double c);
 
 
-//рекурсия: требует повторить ввод пока не введут q
+//СЂРµРєСѓСЂСЃРёСЏ: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
 bool recur_input(double * pa, double * pb, double * pc);
 
 
-//цикл: требует повторить ввод пока не введут q
+//С†РёРєР»: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
 enum Messages cycle_input(double * pa, double * pb, double * pc);
 
 
-//выводит сообщение в зависимости от причины выхода
+//РІС‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїСЂРёС‡РёРЅС‹ РІС‹С…РѕРґР°
 void message_close(enum Messages reason_close);
 
-// подчищает буфер
-void eat_left_string(void);
 
-//ОСТАЛЬНОЕ В РАЗРАБОТКЕ
+
+
+// Р”Р›РЇ РўР•РЎРўРђ
+
+//СЃС‡РёС‚С‹РІР°РµС‚ РєРѕСЂРЅРё РёР· С„Р°Р№Р»Р° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РєРѕР»РІР° СЂРµС€РµРЅРёР№
+enum Messages analys(double * p01, double * p02, const enum Solution SOLVES);
+
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂРµС€Р°С‚РµР»СЏ
+int check(const double a, const double b, const double c,
+                const enum Solution in_solves, const double x01, const double x02);
+
+
