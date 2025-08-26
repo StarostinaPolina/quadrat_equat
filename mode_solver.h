@@ -1,23 +1,32 @@
-#define BIGSIZE 30
+#ifndef MODE_SOLVER_H
+#define MODE_SOLVER_H
 
-//создаёт строку вида "Otvet: x = ..." и записывает её в str
-enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str);
+const short BIGSIZE = 30; // TODO: const
 
-
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
-void check_input(const double a, const double b, const double c);
+#include "util.h"
 
 
-//рекурсия: требует повторить ввод пока не введут q
-bool recur_input(double * pa, double * pb, double * pc);
+////СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "Otvet: x = ..." Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
+enum Messages answer_to_string(const struct Roots rt, char * str);
 
 
-//цикл: требует повторить ввод пока не введут q
-enum Messages cycle_input(double * pa, double * pb, double * pc);
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂР°РІРЅС‹ Р»Рё РєРѕСЌС„С‹ NAN, eСЃР»Рё РґР° - Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРіСЂР°РјРјСѓ, РµСЃР»Рё РЅРµС‚ - РІС‹РІРѕРґРёС‚ РёС… РЅР° СЌРєСЂР°РЅ
+void check_input(const struct Coef cf);
 
 
-//выводит сообщение в зависимости от причины выхода
+//СЂРµРєСѓСЂСЃРёСЏ: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
+bool recur_input(struct Coef * const pst);
+
+
+//С†РёРєР»: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
+enum Messages cycle_input(struct Coef * const pst);
+
+
+//РІС‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїСЂРёС‡РёРЅС‹ РІС‹С…РѕРґР°
 void message_close(enum Messages reason_close);
 
-// режим решателя
+// СЂРµР¶РёРј СЂРµС€Р°С‚РµР»СЏ
 int mode_solver(void);
+
+
+#endif // MODE_SOLVER_H
