@@ -2,52 +2,50 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "unit.h"
 #include "mode_tester.h"
 
 
-//!!!!! НАЧАЛО тест
+// СЃС‡РёС‚С‹РІР°РµС‚ РєРѕСЂРЅРё РёР· С„Р°Р№Р»Р° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РєРѕР»РІР° СЂРµС€РµРЅРёР№
+enum Messages analys(struct Roots * const pst) {
 
-//прототип пф
-void output_x(const char c, const double x, const double x0);
+      switch (pst->amt) {
 
-// считывает корни из файла в зависимости от колва решений
-enum Messages analys(double * p01, double * p02, const enum Solution SOLVES) {
+        case ERR_SOLUT:
+           return FAILURE_MSG;
 
-      switch (SOLVES) {
-
-        case ERR:
-           return FAILURE;
-        case INF:
-        case NO:
-          *p01 = *p02 = NAN;
+        case INF_SOLUT:
+        case NO_SOLUT:
+           pst->x1 = pst->x2 = NAN;
            break;
 
-        case ONE:
-           *p02 = NAN;
+        case ONE_SOLUT:
+           pst->x2 = NAN;
            break;
 
-        case TWO:
+        case TWO_SOLUT:
            break;
 
       }
 
-      return SUCCESS;
+      return SUCCESS_MSG;
 }
 
-//проверяет решателя
-int check(const double a, const double b, const double c, const enum Solution in_solves, const double x01, const double x02) {
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂРµС€Р°С‚РµР»СЏ
+int check(const struct Equat reference) {
 
-     double x1 = NAN, x2 = NAN;
+     struct Roots result {
+            ERR_SOLUT,
+            NAN, NAN 
+     };
 
-     enum Solution out_solves = solve_equat(a, b, c, &x1, &x2);
+     result = solve_equat(reference.coef); 
 
-     if ((out_solves != in_solves) || !compare_double(x1, x01) || !compare_double(x2, x02))  {
+     if ((result.amt != reference.roots.amt) || !compare_double(result.x1, reference.roots.x1) || !compare_double(result.x2, reference.roots.x2))  {
 
-           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", a, b, c, out_solves, in_solves);
+           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", reference.coef.a, reference.coef.b, reference.coef.c, result.amt, reference.roots.amt);
 
-           output_x('1', x1, x01);
-           output_x('2', x2, x02);
+           output_x('1', result.x1, reference.roots.x1);
+           output_x('2', result.x2, reference.roots.x2);
 
            return 0;
       }
@@ -58,8 +56,7 @@ int check(const double a, const double b, const double c, const enum Solution in
       }
 }
 
-
-// ПОДФ check:  удобный вывод
+// РџРћР”Р¤ check:  СѓРґРѕР±РЅС‹Р№ РІС‹РІРѕРґ
 void output_x(const char c, const double x, const double x0) {
 
    printf("    x%c = ", c);
@@ -73,71 +70,73 @@ void output_x(const char c, const double x, const double x0) {
    else printf("%.3lf)", x0);
 }
 
-//тестирует solve_equat
+//С‚РµСЃС‚РёСЂСѓРµС‚ solve_equat
 enum Messages test_solve_equat(FILE * fp) {
 
-    if (fp == NULL)
-          return NULL_FILE;
+      if (fp == NULL)
+          return NULL_FILE_MSG;
 
-    double a = NAN, b = NAN, c = NAN;
-    double x01 = NAN, x02 = NAN;
+      struct Equat reference {
+        { NAN, NAN, NAN },
+        { ERR_SOLUT, NAN, NAN }
+      };
 
-    enum Solution SOLVES = ERR; //колво решений
-    short int_SOLVES = -2;
+    int int_SOLVES = -2;
     int all_tests = NAN, succ_tests = 0;
-
 
 
     eat_left_string(fp);
     fscanf(fp, "%d", &all_tests);
 
     if (isnan(all_tests))
-          return FAILURE;
+          return FAILURE_MSG;
 
 
     for (int i = 0; i < all_tests; i++)  {
 
 
-        fscanf(fp, "%lf %lf %lf %d %lf %lf", &a, &b, &c, &int_SOLVES, &x01, &x02);
-        SOLVES = (enum Solution) int_SOLVES;
+        fscanf(fp, "%lf %lf %lf %d %lf %lf", &reference.coef.a, &reference.coef.b, &reference.coef.c, &int_SOLVES, &reference.roots.x1, &reference.roots.x2);
+        
+        reference.roots.amt = (enum Solution) int_SOLVES;
 
-        analys(&x01, &x02, SOLVES);
+        analys(&reference.roots);
 
-        succ_tests += check(a, b, c, SOLVES, x01, x02);
+        succ_tests += check(reference);
 
-        a = b = c = NAN;
+        reference = {
+        { NAN, NAN, NAN },
+        { ERR_SOLUT, NAN, NAN }
+        };
+
         printf("\n\n");
     }
 
     printf("All test: %d.  Test complete: %d", all_tests, succ_tests);
 
-    return SUCCESS;
+    return SUCCESS_MSG;
 }
 
-// КОНЕЦ тест
 
 
 
-//!!!!! НАЧАЛО режимы
-
-// режим теста
+// СЂРµР¶РёРј С‚РµСЃС‚Р°
 int mode_tester(void) {
     FILE * fp = NULL;
-    fp = fopen("C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\1f  quad-equat\\tests.txt", "r");
+    fp = fopen("C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\tests.txt", "r");
 
-    enum Messages message_test = INIT;
+    enum Messages message_test = INIT_MSG;
 
     switch (test_solve_equat(fp)) {
 
-          case INIT:
+          case INIT_MSG:
                 printf("Error:  test_solve_equat() hasn't started");
                 break;
 
-          case FAILURE:
+          case FAILURE_MSG:
                 printf("Error:  cannot read file");
                 break;
 
-          case NULL_FILE:
+          case NULL_FILE_MSG:
                 printf("Error:  file pointer is NULL");
                 break;
         }
@@ -146,7 +145,7 @@ int mode_tester(void) {
 
 
 
-// КОНЕЦ тест
+// РљРћРќР•Р¦ С‚РµСЃС‚
 
 
 
