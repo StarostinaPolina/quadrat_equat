@@ -5,44 +5,43 @@
 #include <assert.h>
 #include <math.h>
 
-#include "unit.h"
 #include "mode_solver.h"
 
-//!!!!! НАЧАЛО функции (без пф) для ввода/вывода
+//!!!!! РќРђР§РђР›Рћ С„СѓРЅРєС†РёРё (Р±РµР· РїС„) РґР»СЏ РІРІРѕРґР°/РІС‹РІРѕРґР°
 
 
-// выводит сообщение в зависимости от причины выхода
+//РІС‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїСЂРёС‡РёРЅС‹ РІС‹С…РѕРґР°
 void message_close(enum Messages reason_close) {
 
     switch (reason_close) {
 
-        case QUIT:
+        case QUIT_MSG:
            printf("Correct quit");
            break;
 
-        case TOOMUCH_INPUTS:
+        case TOOMUCH_INPUTS_MSG:
            printf("Too many wrong inputs. Close program.");
            break;
 
-        case FAILURE:
+        case FAILURE_MSG:
            printf("reason_close = FAILURE");
            break;
 
-        case SUCCESS:
+        case SUCCESS_MSG:
            printf("reason_close = SUCCESS");
            break;
     }
 }
 
-// рекурс: требует повторить ввод пока не введут q
-bool recur_input(double * pa, double * pb, double * pc) {
+//СЂРµРєСѓСЂСЃРёСЏ: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
+bool recur_input(struct Coef * const pst) {
 
-   assert (pa != NULL && pb != NULL && pc != NULL);
+   assert (pst != NULL);
    bool res;
 
    printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
 
-   if (scanf("%lf %lf %lf", pa, pb, pc) != 3) {
+   if (scanf("%lf %lf %lf", pst->a, pst->b, pst->c) != 3) {
 
         if (getchar() == 'q') {
 
@@ -54,7 +53,7 @@ bool recur_input(double * pa, double * pb, double * pc) {
             eat_left_string(stdin);
             printf("Wrong input. Try again.\n\n");
 
-            if (recur_input(pa, pb, pc))
+            if (recur_input(pst))
                  res = true;
             else res = false;
         }
@@ -68,29 +67,30 @@ bool recur_input(double * pa, double * pb, double * pc) {
    return res;
 }
 
-// цикл: требует повторить ввод пока не введут q
-enum Messages cycle_input(double * pa, double * pb, double * pc) {
+//С†РёРєР»: С‚СЂРµР±СѓРµС‚ РїРѕРІС‚РѕСЂРёС‚СЊ РІРІРѕРґ РїРѕРєР° РЅРµ РІРІРµРґСѓС‚ q
+enum Messages cycle_input(struct Coef * const pst) {
 
-   assert (pa != NULL && pb != NULL && pc != NULL);
+   assert (pst != NULL);
 
-   enum Messages flag = SUCCESS;
+   enum Messages flag = SUCCESS_MSG;
 
    printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
 
-   for (int i=0; (flag == SUCCESS) && (scanf("%lf %lf %lf", pa, pb, pc) != 3); i++) {
+   for (int i=0; (flag == SUCCESS_MSG) && (scanf("%lf %lf %lf", &(pst->a), &(pst->b), &(pst->c)) != 3); i++) {
 
         if (getchar() == 'q') {
 
               eat_left_string(stdin);
-              flag = QUIT;
+              flag = QUIT_MSG;
         }
 
         else {
             eat_left_string(stdin);
 
             if (i>4)
-                flag = TOOMUCH_INPUTS;
+                flag = TOOMUCH_INPUTS_MSG;
             else printf("Wrong input. Try again.\n\n");
+
 
         }
     }
@@ -98,78 +98,83 @@ enum Messages cycle_input(double * pa, double * pb, double * pc) {
     return flag;
 }
 
-// создаёт строку вида "Otvet: x = ..." и записывает её в str
-enum Messages answer_to_string(const enum Solution SOLVES, const double x1, const double x2, char * str) {
+// СЃРѕР·РґР°С‘С‚ СЃС‚СЂРѕРєСѓ РІРёРґР° "Otvet: x = ..." Рё Р·Р°РїРёСЃС‹РІР°РµС‚ РµС‘ РІ str
+enum Messages answer_to_string(const struct Roots rt, char * str) {
 
     assert (str != NULL);
-    enum Messages res = SUCCESS;
+    enum Messages res = SUCCESS_MSG;
 
-    switch (SOLVES) {
+    switch (rt.amt) {
 
-        case INF:
+        case INF_SOLUT:
             sprintf(str, "Otvet:  Any solution");
             break;
 
-        case NO:
+        case NO_SOLUT:
             sprintf(str, "Otvet:  No solution");
             break;
 
-        case ONE:
-           assert (!isnan(x1));
-           sprintf(str, "Otvet:  x = %.3lf", x1);
+        case ONE_SOLUT:
+           assert (!isnan(rt.x1));
+           sprintf(str, "Otvet:  x = %.3lf", rt.x1);
            break;
 
-        case TWO:
-            assert (!(isnan(x1) || isnan(x2)));
-            sprintf(str, "Otvet:  x1 = %.3lf,  x2 = %.3lf", x1, x2);
+        case TWO_SOLUT:
+            assert (!(isnan(rt.x1) || isnan(rt.x2)));
+            sprintf(str, "Otvet:  x1 = %.3lf,  x2 = %.3lf", rt.x1, rt.x2);
             break;
 
-        case ERR:
-            res = FAILURE;
+        case ERR_SOLUT:
+            res = FAILURE_MSG;
             break;
     }
     return res;
 }
 
-// проверка чисел на NAN
-void check_input(const double a, const double b, const double c) {
+//РїСЂРѕРІРµСЂСЏРµС‚ СЂР°РІРЅС‹ Р»Рё РєРѕСЌС„С‹ NAN, eСЃР»Рё РґР° - Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРіСЂР°РјРјСѓ, РµСЃР»Рё РЅРµС‚ - РІС‹РІРѕРґРёС‚ РёС… РЅР° СЌРєСЂР°РЅ
+void check_input(const struct Coef cf) {
 
-    assert (!(isnan(a) || isnan(b) || isnan(c)));
-    printf("Vvedeno: %.3lf %.3lf %.3lf\n", a, b, c);
+    assert (!(isnan(cf.a) || isnan(cf.b) || isnan(cf.c)));
+    printf("Vvedeno: %.3lf %.3lf %.3lf\n", cf.a, cf.b, cf.c);
 }
 
-
-// КОНЕЦ функции (без пф) для ввода/вывода
-
+// РљРћРќР•Р¦ С„СѓРЅРєС†РёРё (Р±РµР· РїС„) РґР»СЏ РІРІРѕРґР°/РІС‹РІРѕРґР°
 
 
 
 
-// РЕЖИМ решателя
+
+// СЂРµР¶РёРј СЂРµС€Р°С‚РµР»СЏ
 int mode_solver(void) {
 
-    double a = NAN, b = NAN, c = NAN;
-    double x1 = NAN, x2 = NAN;
+    struct Equat eq {
+        { NAN, NAN, NAN },
+        { ERR_SOLUT, NAN, NAN }
+    };
 
-    char str_answer[BIGSIZE]; //память для строки с ответом
 
-    enum Solution amt_solves = ERR; //колво решений
-    enum Messages reason_close = FAILURE;
+    char str_answer[BIGSIZE]; //РїР°РјСЏС‚СЊ РґР»СЏ СЃС‚СЂРѕРєРё СЃ РѕС‚РІРµС‚РѕРј
 
-    reason_close = cycle_input(&a, &b, &c);
+    enum Messages reason_close = FAILURE_MSG;
 
-    for (; reason_close == SUCCESS; reason_close = cycle_input(&a, &b, &c))  {
+    reason_close = cycle_input(&eq.coef);
 
-        check_input(a, b, c);
+    for (; reason_close == SUCCESS_MSG; reason_close = cycle_input(&eq.coef))  {
 
-//главная суть (
-        amt_solves = solve_equat(a, b, c, &x1, &x2);
-        answer_to_string(amt_solves, x1, x2, str_answer);
-//главная суть )
+        check_input(eq.coef);
+
+//РіР»Р°РІРЅР°СЏ СЃСѓС‚СЊ (
+        eq.roots = solve_equat(eq.coef); 
+        answer_to_string(eq.roots, str_answer);              
+//РіР»Р°РІРЅР°СЏ СЃСѓС‚СЊ )
 
         fputs(str_answer, stdout);
 
-        a = b = c = x1 = x2 = NAN;
+        eq = {
+        { NAN, NAN, NAN },
+        { ERR_SOLUT, NAN, NAN }
+        };
+
         printf("\n\n");
     }
 
