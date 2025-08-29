@@ -5,100 +5,90 @@
 #include <assert.h>
 #include <math.h>
 
-#include "mode_solver.h"
+#include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\mode_solver.h"
 
-//!!!!! НАЧАЛО функции (без пф) для ввода/вывода
-
-
-//выводит сообщение в зависимости от причины выхода
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Выводит на экран сообщение в зависимости от причины завершения режима решателя
+//!
+//! @param [in] reason_close Причина завершения режима решателя
+//-----------------------------------------------------------------------------------------------------------------------------------
 void message_close(enum Messages reason_close) {
 
     switch (reason_close) {
 
         case QUIT_MSG:
-           printf("Correct quit");
+           printf("Correct quit\n");
            break;
 
         case TOOMUCH_INPUTS_MSG:
-           printf("Too many wrong inputs. Close program.");
+           printf("Too many wrong inputs. Close program.\n");
            break;
 
-        case FAILURE_MSG:
-           printf("reason_close = FAILURE");
+        case INIT_MSG:
+           fprintf(stderr, "cycle_input() hasn't started\n");
            break;
 
-        case SUCCESS_MSG:
-           printf("reason_close = SUCCESS");
+        default:
+           fprintf(stderr, "Undefined error\n");
            break;
     }
 }
 
-//рекурсия: требует повторить ввод пока не введут q
-bool recur_input(struct Coef * const pst) {
 
-   assert (pst != NULL);
-   bool res;
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Просит пользователя ввести коэффиценты с клавиатуры и считывает их
+//!
+//! @param [out] pts Указатель на структуру с коэффицентами
+//!
+//! @return Статус завершения функции
+//!
+//! @note В случае неверного ввода дает вторую попытку. Если 5 попыток подряд - неуспешные, завершает программу
+//! @note Возвращает QUIT_MSG если пользователь захотел завершить программу,
+//!         TOOMUCH_INPUTS_MSG если слишком много неуспешных попыток ввода,
+//!         SUCCESS_MSG если коэффиценты считаны успешно
+//-----------------------------------------------------------------------------------------------------------------------------------
 
-   printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
-
-   if (scanf("%lf %lf %lf", pst->a, pst->b, pst->c) != 3) {
-
-        if (getchar() == 'q') {
-
-              eat_left_string(stdin);
-              res = false;
-        }
-
-        else {
-            eat_left_string(stdin);
-            printf("Wrong input. Try again.\n\n");
-
-            if (recur_input(pst))
-                 res = true;
-            else res = false;
-        }
-
-    }
-
-   else {
-        res = true;
-        eat_left_string(stdin);
-   }
-   return res;
-}
-
-//цикл: требует повторить ввод пока не введут q
 enum Messages cycle_input(struct Coef * const pst) {
 
    assert (pst != NULL);
 
-   enum Messages flag = SUCCESS_MSG;
+   printf("Enter coefficients of equation (\"q\" for quit):\n");
 
-   printf("Vvedite koefficenty uravnenya (\"q\" for quit):\n");
-
-   for (int i=0; (flag == SUCCESS_MSG) && (scanf("%lf %lf %lf", &(pst->a), &(pst->b), &(pst->c)) != 3); i++) {
+   for (int i=0; (scanf("%lf %lf %lf", &(pst->a), &(pst->b), &(pst->c)) != 3); i++) {
 
         if (getchar() == 'q') {
 
               eat_left_string(stdin);
-              flag = QUIT_MSG;
+              return QUIT_MSG;
         }
 
         else {
             eat_left_string(stdin);
 
             if (i>4)
-                flag = TOOMUCH_INPUTS_MSG;
+                return TOOMUCH_INPUTS_MSG;
             else printf("Wrong input. Try again.\n\n");
-
-
         }
     }
 
-    return flag;
+    assert (!(isnan(pst->a) || isnan(pst->b) || isnan(pst->c)));
+    printf("Entered: %.3lf %.3lf %.3lf\n", pst->a, pst->b, pst->c);
+
+    return SUCCESS_MSG;
 }
 
-// создаёт строку вида "Otvet: x = ..." и записывает её в str
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Cоздаёт строку вида "Answer: x = ..." и записывает её в str
+//!
+//! @param [in] pts Указатель на структуру с корнями
+//! @param [in] str Указатель на массив чаров в который будет записана строка
+//!
+//! @return Статус завершения функции
+//!
+//! @note В случае некорректного колва корней возвращает FAILURE_MSG, не создаёт строку и выводит сообщение, в противном случае возвращает SUCCESS_MSG
+//-----------------------------------------------------------------------------------------------------------------------------------
+
 enum Messages answer_to_string(const struct Roots rt, char * str) {
 
     assert (str != NULL);
@@ -107,44 +97,41 @@ enum Messages answer_to_string(const struct Roots rt, char * str) {
     switch (rt.amt) {
 
         case INF_SOLUT:
-            sprintf(str, "Otvet:  Any solution");
+            sprintf(str, "Answer:  Any solution");
             break;
 
         case NO_SOLUT:
-            sprintf(str, "Otvet:  No solution");
+            sprintf(str, "Answer:  No solution");
             break;
 
         case ONE_SOLUT:
            assert (!isnan(rt.x1));
-           sprintf(str, "Otvet:  x = %.3lf", rt.x1);
+           sprintf(str, "Answer:  x = %.3lf", rt.x1);
            break;
 
         case TWO_SOLUT:
             assert (!(isnan(rt.x1) || isnan(rt.x2)));
-            sprintf(str, "Otvet:  x1 = %.3lf,  x2 = %.3lf", rt.x1, rt.x2);
+            sprintf(str, "Answer:  x1 = %.3lf,  x2 = %.3lf", rt.x1, rt.x2);
             break;
 
-        case ERR_SOLUT:
+        default:
             res = FAILURE_MSG;
+            printf("Incorrect amt_solves. Answer string not created\n");
             break;
     }
     return res;
 }
 
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
-void check_input(const struct Coef cf) {
-
-    assert (!(isnan(cf.a) || isnan(cf.b) || isnan(cf.c)));
-    printf("Vvedeno: %.3lf %.3lf %.3lf\n", cf.a, cf.b, cf.c);
-}
-
-// КОНЕЦ функции (без пф) для ввода/вывода
 
 
 
-
-
-// режим решателя
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Запускает режим решателя
+//!
+//! @return Статус завершения функции
+//!
+//! @note Возвращает 1 если возникла ошибка, 0 в противном случае
+//-----------------------------------------------------------------------------------------------------------------------------------
 int mode_solver(void) {
 
     struct Equat eq {
@@ -155,20 +142,16 @@ int mode_solver(void) {
 
     char str_answer[BIGSIZE]; //память для строки с ответом
 
-    enum Messages reason_close = FAILURE_MSG;
+    enum Messages reason_close = INIT_MSG;
 
-    reason_close = cycle_input(&eq.coef);
+    
+    for (reason_close = cycle_input(&eq.coef); reason_close == SUCCESS_MSG; reason_close = cycle_input(&eq.coef))  {
 
-    for (; reason_close == SUCCESS_MSG; reason_close = cycle_input(&eq.coef))  {
 
-        check_input(eq.coef);
-
-//главная суть (
         eq.roots = solve_equat(eq.coef); 
-        answer_to_string(eq.roots, str_answer);              
-//главная суть )
 
-        fputs(str_answer, stdout);
+        if (answer_to_string(eq.roots, str_answer) != FAILURE_MSG)
+            fputs(str_answer, stdout);
 
         eq = {
         { NAN, NAN, NAN },
