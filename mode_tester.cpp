@@ -2,35 +2,20 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "mode_tester.h"
+#include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\mode_tester.h"
 
-
-// считывает корни из файла в зависимости от колва решений
-enum Messages analys(struct Roots * const pst) {
-
-      switch (pst->amt) {
-
-        case ERR_SOLUT:
-           return FAILURE_MSG;
-
-        case INF_SOLUT:
-        case NO_SOLUT:
-           pst->x1 = pst->x2 = NAN;
-           break;
-
-        case ONE_SOLUT:
-           pst->x2 = NAN;
-           break;
-
-        case TWO_SOLUT:
-           break;
-
-      }
-
-      return SUCCESS_MSG;
-}
-
-//проверяет решателя
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Проверяет успешно ли прошёл конкретный тест
+//!
+//! @param [in] reference Указатель на структуру содержащую тестовые данные
+//!
+//! @return Статус прохождения теста
+//! 
+//! @note Возвращает 1 если тест прошел успешно, 0 если нет
+//! @note Печатает информацию о непройденном тесте, "Good!" в противном случае
+//!
+//! @note Подфункция для test_solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
 int check(const struct Equat reference) {
 
      struct Roots result {
@@ -42,10 +27,11 @@ int check(const struct Equat reference) {
 
      if ((result.amt != reference.roots.amt) || !compare_double(result.x1, reference.roots.x1) || !compare_double(result.x2, reference.roots.x2))  {
 
-           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf) \nSOLVES = %d  (inst. %d)", reference.coef.a, reference.coef.b, reference.coef.c, result.amt, reference.roots.amt);
+           printf("FAILED:   solve_equat(%.3lf,  %.3lf,  %.3lf)\n", reference.coef.a, reference.coef.b, reference.coef.c);
 
-           output_x('1', result.x1, reference.roots.x1);
-           output_x('2', result.x2, reference.roots.x2);
+           output_smart("AMT_SOLVES", result.amt, reference.roots.amt);
+           output_smart("x1", result.x1, reference.roots.x1);
+           output_smart("x2", result.x2, reference.roots.x2);
 
            return 0;
       }
@@ -56,10 +42,21 @@ int check(const struct Equat reference) {
       }
 }
 
-// ПОДФ check:  удобный вывод
-void output_x(const char c, const double x, const double x0) {
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Выводит строку вида "[имя переменой] = [значение от solve_equat()] (inst. [верное значение])"
+//!
+//! @param [in] str  Указатель на строку с названием переменной
+//! @param [in] x    Значение этой переменной полученное от solve_equat()
+//! @param [in] x0   Верное значение
+//!
+//! @note Печатает значение NAN как строку "NAN"
+//!
+//! @note Подфункция для check()
+//-----------------------------------------------------------------------------------------------------------------------------------
 
-   printf("    x%c = ", c);
+void output_smart(const char * str, const double x, const double x0) {
+
+   printf("%10s = ", str);
 
    if (isnan(x)) printf("NAN");
    else printf("%.3lf", x);
@@ -70,7 +67,19 @@ void output_x(const char c, const double x, const double x0) {
    else printf("%.3lf)", x0);
 }
 
-//тестирует solve_equat
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Считывает тесты из файла и запускает их
+//!
+//! @param [in] fp Указатель на файл откуда ведётся чтение
+//!
+//! @return Статус завершения функции
+//!
+//! @note Подсчитывает колво успешных и проваленных тестов и выводит его на экран
+//! @note Если передан нулевой указатель на файл возвращает NULL_FILE_MSG
+//! @note В случае ошибки чтения возращает FAILURE_MSG
+//!
+//! @note Подфункция для mode_tester()
+//-----------------------------------------------------------------------------------------------------------------------------------
 enum Messages test_solve_equat(FILE * fp) {
 
       if (fp == NULL)
@@ -95,11 +104,13 @@ enum Messages test_solve_equat(FILE * fp) {
     for (int i = 0; i < all_tests; i++)  {
 
 
-        fscanf(fp, "%lf %lf %lf %d %lf %lf", &reference.coef.a, &reference.coef.b, &reference.coef.c, &int_SOLVES, &reference.roots.x1, &reference.roots.x2);
-        
+        if (fscanf(fp, "%lf %lf %lf %d %lf %lf", &reference.coef.a, &reference.coef.b, &reference.coef.c, &int_SOLVES, &reference.roots.x1, &reference.roots.x2) != 6)
+            return FAILURE_MSG;
+
         reference.roots.amt = (enum Solution) int_SOLVES;
 
-        analys(&reference.roots);
+        if (analys(&reference.roots) == FAILURE_MSG)
+            return FAILURE_MSG;
 
         succ_tests += check(reference);
 
@@ -111,41 +122,80 @@ enum Messages test_solve_equat(FILE * fp) {
         printf("\n\n");
     }
 
-    printf("All test: %d.  Test complete: %d", all_tests, succ_tests);
+    printf("All tests: %d.  Completed: %d.  Failed: %d", all_tests, succ_tests, (all_tests - succ_tests));
 
     return SUCCESS_MSG;
 }
 
 
 
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Запускает режим тестировщика
+//!
+//! @return Статус завершения функции
+//!
+//! @note Возвращает 1 если возникла ошибка, 0 в противном случае
+//! @note Если во время выполнения возникла ошибка, выводит в stderr сообщение, в чём она заключается
+//-----------------------------------------------------------------------------------------------------------------------------------
 
-// режим теста
-int mode_tester(void) {
+int mode_tester(const char * file_name) {
     FILE * fp = NULL;
-    fp = fopen("C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\tests.txt", "r");
+    fp = fopen(file_name, "r");
 
     enum Messages message_test = INIT_MSG;
 
     switch (test_solve_equat(fp)) {
 
           case INIT_MSG:
-                printf("Error:  test_solve_equat() hasn't started");
-                break;
+                fprintf(stderr, "Error:  test_solve_equat() hasn't started");
+                return 1;
 
           case FAILURE_MSG:
-                printf("Error:  cannot read file");
-                break;
+                fprintf(stderr, "Error:  incorrect file content");
+                return 1;
 
           case NULL_FILE_MSG:
-                printf("Error:  file pointer is NULL");
-                break;
+                fprintf(stderr, "Error:  cannot open file");
+                return 1;
         }
     return 0;
 }
 
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Меняет значения отсутвующих корней на NAN
+//!
+//! @param [out] pts Указатель на структуру типа Roots со считанными из файла корнями
+//!
+//! @return Статус завершения функции
+//!
+//! @note Если pts->amt = ERR_SOLUT - возвращает значение ошибки
+//!
+//! @note Подфункция для test_solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
 
+enum Messages analys(struct Roots * const pst) {
 
-// КОНЕЦ тест
+      switch (pst->amt) {
+
+        case INF_SOLUT:
+        case NO_SOLUT:
+           pst->x1 = pst->x2 = NAN;
+           break;
+
+        case ONE_SOLUT:
+           pst->x2 = NAN;
+           break;
+
+        case TWO_SOLUT:
+           break;
+
+        default:
+           return FAILURE_MSG;  
+      }
+
+      return SUCCESS_MSG;
+}
+
 
 
 
