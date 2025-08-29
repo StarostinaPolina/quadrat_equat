@@ -1,6 +1,8 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+
+
 const double DELTA = 1.0e-5;
 
 enum Solution {
@@ -61,12 +63,17 @@ bool compare_double(double your, double sample);
 
 //мэин: выбирает режим
 enum Modes select_mode(void);
-
+enum Modes cmd_select_mode(const char* str);
 
 //режим тестировщика
 int mode_tester(void);
 
 // режим решателя
 int mode_solver(void);
+
+//пф для solve_equat()
+enum Solution solve_linar(const double b, const double c, double * p1);
+enum Messages solve_quadrat(const struct Coef coef, struct Roots * const p);
+
 
 #endif // UNIT_H
