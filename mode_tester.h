@@ -1,32 +1,21 @@
-#ifndef MODE_SOLVER_H
-#define MODE_SOLVER_H
-
-const short BIGSIZE = 30; // TODO: const
+#ifndef MODE_TESTER_H
+#define MODE_TESTER_H
 
 #include "util.h"
 
+//красивый вывод
+void output_smart(const char * str, const double x, const double x0);
 
-////создаёт строку вида "Otvet: x = ..." и записывает её в str
-enum Messages answer_to_string(const struct Roots rt, char * str);
+//считывает корни из файла в зависимости от колва решений
+enum Messages analys(struct Roots * const pst);
 
+//проверяет решателя
+int check(const struct Equat reference);
+    
+//тестирует solve_equat
+enum Messages test_solve_equat(FILE * fp);
 
-//проверяет равны ли коэфы NAN, eсли да - закрывает программу, если нет - выводит их на экран
-void check_input(const struct Coef cf);
+//режим тестировщика
+int mode_tester(const char * file_name);
 
-
-//рекурсия: требует повторить ввод пока не введут q
-bool recur_input(struct Coef * const pst);
-
-
-//цикл: требует повторить ввод пока не введут q
-enum Messages cycle_input(struct Coef * const pst);
-
-
-//выводит сообщение в зависимости от причины выхода
-void message_close(enum Messages reason_close);
-
-// режим решателя
-int mode_solver(void);
-
-
-#endif // MODE_SOLVER_H
+#endif //MODE_TESTER_H
