@@ -1,7 +1,7 @@
 #ifndef MODE_SOLVER_H
 #define MODE_SOLVER_H
 
-const short BIGSIZE = 30; // TODO: const
+const short BIGSIZE = 30; 
 
 #include "util.h"
 
