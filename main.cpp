@@ -2,56 +2,46 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 
 #define MY_ASSERT(E) if (! (E)) {printf("Error: in file  %s  line %d", __FILE__, __LINE__); exit(EXIT_FAILURE);}
 
+#include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\mode_solver.h"
+#include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\mode_tester.h"
 
 
-
-#include "mode_solver.h"
-#include "mode_tester.h"
-
-
-int main( ) {
-   int f = 0;
+int main(int argc, char* argv[]) {
   
+   MY_ASSERT((argc == 3) || (argc == 2));
 
-   MY_ASSERT(f != 0);
-
-    bool is_input_incorrect = true;
     int ret = NAN;
 
-    while (is_input_incorrect) {
-
-      enum Modes mode = select_mode();
+      enum Modes mode = cmd_select_mode(argv[1]);
 
       switch (mode) {
 
         case SOLVER:
-           printf("Solver mode selected:\n\n");
-           is_input_incorrect = false;
+           printf("\n\x1b[38;2;255;255;102mSolver mode selected:\n\n");
            ret = mode_solver();
            break;
 
         case TESTER:
-           printf("Tester mode selected:\x1b[38;2;255;0;188m\n\n");
-           is_input_incorrect = false;
-           ret = mode_tester();
+           printf("\n\x1b[38;2;102;255;225mTester mode selected:\n\n");
+           ret = mode_tester(argv[2]);
            break;
 
         case MAIN_QUIT:
-           printf("Final\n");
-           is_input_incorrect = false;
+           printf("\n\x1b[38;2;255;102;178mFinal");
            ret = 0;
            break;
 
         case INC_INPUT:
+           printf("\n\x1b[38;2;255;178;102mIncorrect input. Try again");
            break;
 
        }
-    }
-    printf("\n\n \x1b[38;2;0;230;255mCOMMIT GITHUB\n");
+    
+    printf("\n\n\x1b[38;2;255;0;0mCOMMIT GITHUB\x1b[0;2;0;0;0m\n\n");
 
     return ret;
 }
