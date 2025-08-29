@@ -3,16 +3,18 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <string.h> 
 
-#include "util.h"
-
-const short SIZE_MODE = 3;  //const
-
+#include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\util.h"
 
 
-//!!!!! НАЧАЛО масенькие и полезные
 
-// подчищает буфер
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Отбрасывает все символы до символа новой строки или EOF включительно
+//!
+//! @param [in]  fp  Указатель на файл откуда ведётся чтение
+//-----------------------------------------------------------------------------------------------------------------------------------
+
 
 void eat_left_string(FILE * fp) {
     char c = NAN;
@@ -22,34 +24,39 @@ void eat_left_string(FILE * fp) {
 }
 
 
-//сравнивает даблы
-bool compare_double(double your, double sample) {
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Сравнивает числа типа double с точностью до константы DELTA
+//!
+//! @param [in]  a Первое число
+//! @param [in]  b Второе число
+//!
+//! @return Результат сравнения (значение типа bool)
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+
+bool compare_double(double a, double b) {
 
     bool res;
 
-    if (isnan(your))
-        res = (isnan(sample));
+    if (isnan(a))
+        res = (isnan(b));
     else
-        res = (fabs(your-sample) <= DELTA); // TODO: в константу
-
+        res = (fabs(a - b) <= DELTA); 
     return res;
 }
 
 
-// КОНЕЦ масенькие и полезные
 
 
 
 
-
-//!!!!! НАЧАЛО solve_equat
-
-
-// протипы пф
-enum Solution solve_linar(const double b, const double c, double * p1);
-enum Messages solve_quadrat(const struct Coef coef, struct Roots * const p);
-
-// ГЛАВНАЯ
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Решает квадратное ур-е по 3-м коэффицентам (в том числе нулевым)
+//!
+//! @param [in]  coef  Структура типа Coef с коэффицентами 
+//!
+//! @return Структура типа Roots с корнями ур-я
+//-----------------------------------------------------------------------------------------------------------------------------------
 struct Roots solve_equat(const struct Coef coef)  {
 
     struct Roots result {
@@ -64,13 +71,23 @@ struct Roots solve_equat(const struct Coef coef)  {
     return result;
 }
 
-//  ПОДФ:       решает КВАДРАТНОЕ ур-е, возвращает колво решений и записывает их в *p1, *p2
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Решает квадратное ур-е
+//!
+//! @param [in]  coef  Структура типа Coef с коэффицентами 
+//! @param [out] p     Указатель на структуру типа Roots с корнями
+//!
+//! @return Статус завершения функции
+//!
+//! @note Подфункция для solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
+
 enum Messages solve_quadrat(const struct Coef coef, struct Roots * const p) {
 
     if (p == NULL)
         return FAILURE_MSG;
 
-    double D = NAN; //дискриминант
+    double D = NAN; 
 
     D = coef.b * coef.b - 4 * coef.a * coef.c;
     if (D < 0) {
@@ -90,7 +107,18 @@ enum Messages solve_quadrat(const struct Coef coef, struct Roots * const p) {
     return SUCCESS_MSG;
 }
 
-//  ПОДФ:       решает ЛИНЕЙНОЕ ур-е, возвращает колво решений и записывает их в *p1
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Решает линейное ур-е
+//!
+//! @param [in]  b  b-коэффицент 
+//! @param [in]  c  c-коэффицент 
+//! @param [out] p1 Указатель на x1
+//!
+//! @return Количество решений
+//!
+//! @note Подфункция для solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
+
 enum Solution solve_linar(const double b, const double c, double * p1) {
 
     assert (p1 != NULL);
@@ -111,55 +139,41 @@ enum Solution solve_linar(const double b, const double c, double * p1) {
 }
 
 
-// КОНЕЦ solve_equat
 
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+//! Выбирает режим
+//!
+//! @param [in] str Второй аргумент командной строки
+//!
+//! @return Выбранный режим (тип enum Modes)
+//-----------------------------------------------------------------------------------------------------------------------------------
 
-//для мэин
 
-enum Modes select_mode(void) {
+enum Modes cmd_select_mode(const char * str) {
 
-    char str[SIZE_MODE] = {};  //инициализирует чем??
+    if (strlen(str) == 1) {
 
-    printf("Select a mode:  's' for solver,  't' for tester, 'q' for quit\n");
+        switch (str[0]) {
 
-    if (fgets(str, SIZE_MODE, stdin)) // TODO: {     }
+            case 's':
+                return SOLVER;
 
-        if (str[1] != '\n') {
+            case 't':
+                return TESTER;
 
-                eat_left_string(stdin);
-                printf("Incorrect input. Try again\n\n");
+            case 'q':
+                return MAIN_QUIT;
+
+            default:
                 return INC_INPUT;
+            };
         }
-
-    else
-        if (str[0] == 0)  {
-
-            eat_left_string(stdin);
-            printf("Incorrect input. Try again\n\n");
-            return INC_INPUT;
-         }
-
-
-    switch (str[0]) {
-
-        case 's':
-            return SOLVER;
-
-        case 't':
-            return TESTER;
-
-        case 'q':
-            return MAIN_QUIT;
-
-        default:
-            fprintf(stderr, "Incorrect input. Try again\n\n");
-            return INC_INPUT;
-
-    }
+    else {
+        return INC_INPUT;   
+    };    
 }
-//g++ флагиmain.cpp mode_solver.cpp mode_tester.cpp util.cpp -o eq.exe
-//"C:\Users\HONOR\Desktop\Polina C\PR KvadrEquation\pr_quad-equat"
+
 
 
 
