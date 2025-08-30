@@ -1,8 +1,90 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "C:\\Users\\HONOR\\Desktop\\Polina C\\PR KvadrEquation\\pr_quad-equat\\includes\\mode_tester.h"
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Записывает данные из файла в строку
+//!
+//! @param [in] fp Указатель на файл который нужно считать
+//!
+//! @return Указатель на строку, где хранятся считанные из файла данные
+//! 
+//! @note Возвращает NULL если fp = 0 или файл был считан не до конца
+//!
+//! @note Подфункция для test_solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
+char* file_to_string(FILE * fp) {
+
+    if (! fp) return NULL;
+
+    long file_size = 0;
+    char* file_content = NULL;
+
+
+    fseek(fp, 0L, SEEK_END);
+    file_size = ftell(fp);
+    rewind(fp);
+
+
+    file_content = (char *) calloc(file_size, sizeof (char));
+
+
+    int count = fread(file_content, sizeof file_content[0], (size_t) file_size, fp);
+
+
+    if (count != file_size) return NULL;
+    
+    return file_content;
+}
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Пропускает символы в строке до '\n' включительно 
+//!
+//! @param [in] str  Указатель на строку откуда нужно считать
+//!
+//! @return Колво пропущенных символов
+//!
+//! @note Подфункция для test_solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
+int skip_string_in_filestring(const char* str) {
+    int i = 0;
+    while (str[i++] != '\n')
+        continue;
+    return i;
+}
+
+// !!!! НЕ РАБОТАЕТ !!!!
+//-----------------------------------------------------------------------------------------------------------------------------------
+//! Проверяет, какой символ в строке встретится раньше: '\n' или любой непробельный 
+//!
+//! @param [in] str  Указатель на строку откуда нужно считать
+//!
+//! @return Сообщение о том, какой символ встретился первым
+//!
+//! @note Возвращает SUCCESS_MSG если первым встретился '\n', FAILURE_MSG если непробельный
+//! 
+//! @note Подфункция для test_solve_equat()
+//-----------------------------------------------------------------------------------------------------------------------------------
+enum Messages is_end_of_string(const char* str) {
+    char c = NAN;
+
+    for (int i = 0; true; i++) {
+        c = str[i];
+        if (! isspace(c))
+            return FAILURE_MSG;
+        else
+            if (c == '\n')
+                return SUCCESS_MSG;
+    }
+}
+
+
 
 //-----------------------------------------------------------------------------------------------------------------------------------
 //! Проверяет успешно ли прошёл конкретный тест
@@ -92,10 +174,20 @@ enum Messages test_solve_equat(FILE * fp) {
 
     int int_SOLVES = -2;
     int all_tests = NAN, succ_tests = 0;
+    char * content_file = NULL;
+    long pos = NAN;
+    int shift = NAN;
 
+    content_file = file_to_string(fp);
 
-    eat_left_string(fp);
-    fscanf(fp, "%d", &all_tests);
+    printf("%s", content_file);
+    pos = skip_string_in_filestring(content_file);
+
+    
+
+    sscanf(content_file + pos, "%d %n", &all_tests, &shift);
+
+    pos += shift;
 
     if (isnan(all_tests))
           return FAILURE_MSG;
@@ -104,8 +196,14 @@ enum Messages test_solve_equat(FILE * fp) {
     for (int i = 0; i < all_tests; i++)  {
 
 
-        if (fscanf(fp, "%lf %lf %lf %d %lf %lf", &reference.coef.a, &reference.coef.b, &reference.coef.c, &int_SOLVES, &reference.roots.x1, &reference.roots.x2) != 6)
+        if (sscanf(content_file + pos, "%lf %lf %lf %d %lf %lf %n", &reference.coef.a, &reference.coef.b, &reference.coef.c, &int_SOLVES, &reference.roots.x1, &reference.roots.x2, &shift) != 6)
             return FAILURE_MSG;
+
+        
+        pos += shift;
+
+        //if (is_end_of_string(content_file + pos) == FAILURE_MSG) return FAILURE_MSG;  ПОЧЕМУ НЕ РАБОТАЕТ
+
 
         reference.roots.amt = (enum Solution) int_SOLVES;
 
@@ -122,7 +220,9 @@ enum Messages test_solve_equat(FILE * fp) {
         printf("\n\n");
     }
 
-    printf("All tests: %d.  Completed: %d.  Failed: %d", all_tests, succ_tests, (all_tests - succ_tests));
+    printf("All tests: %d.  Completed: %d.  Failed: %d.", all_tests, succ_tests, (all_tests - succ_tests));
+
+    free(content_file);
 
     return SUCCESS_MSG;
 }
@@ -140,7 +240,7 @@ enum Messages test_solve_equat(FILE * fp) {
 
 int mode_tester(const char * file_name) {
     FILE * fp = NULL;
-    fp = fopen(file_name, "r");
+    fp = fopen(file_name, "rb");
 
     enum Messages message_test = INIT_MSG;
 
