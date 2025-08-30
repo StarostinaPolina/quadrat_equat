@@ -76,4 +76,5 @@ enum Solution solve_linar(const double b, const double c, double * p1);
 enum Messages solve_quadrat(const struct Coef coef, struct Roots * const p);
 
 
+
 #endif // UNIT_H
